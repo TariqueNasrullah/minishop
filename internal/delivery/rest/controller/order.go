@@ -110,7 +110,12 @@ func (o *OrderController) orderList(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, minishopHttpError.HTTPError{Message: "Inter Server error", Type: "error", Code: http.StatusInternalServerError})
 	}
 
-	return c.JSON(http.StatusOK, orderList)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "Orders successfully fetched.",
+		"type":    "success",
+		"code":    http.StatusOK,
+		"data":    orderList,
+	})
 }
 
 func extractAud(c echo.Context) (aud uint64, ok bool) {
