@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// ValidationError can be thrown from multiple places mainly from Usecase layer.
 type ValidationError struct {
 	ErrorMap map[string][]string
 }

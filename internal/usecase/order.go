@@ -23,11 +23,14 @@ type orderUsecase struct {
 }
 
 func (o *orderUsecase) Create(ctx context.Context, params domain.OrderCreateParameters) (createResp domain.OrderCreateResponse, err error) {
+	// Basic validation. UserId is required to create Order
 	if params.CreatedBy == 0 {
 		return createResp, errors.New("user id not passed")
 	}
 
+	// validate domain.OrderCreateParameters (params) using validation package
 	if err = validate.Struct(params); err != nil {
+		// Try to convert the validation error into domain.ValidationError
 		validationErr := convertValidationError(err, params)
 		if validationErr != nil {
 			return createResp, validationErr
@@ -36,11 +39,14 @@ func (o *orderUsecase) Create(ctx context.Context, params domain.OrderCreatePara
 		return createResp, err
 	}
 
+	// Fee Calculation
 	var (
-		baseFee     = 60.0
+		baseFee     = 60.0 // City 1 and Weight <= .5 kg
 		deliveryFee = 0.0
 		codFee      = 0.0
 	)
+
+	// BaseFee is 100 of city other than 1
 	if params.RecipientCity != 1 {
 		baseFee = 100.0
 	}
@@ -53,6 +59,7 @@ func (o *orderUsecase) Create(ctx context.Context, params domain.OrderCreatePara
 		deliveryFee = baseFee + 15*math.Ceil(params.ItemWeight-1.0)
 	}
 
+	// Cod fee is 1% of the Amount to Collect
 	codFee = float64(params.AmountToCollect) * 0.01
 
 	order := domain.Order{
@@ -95,6 +102,7 @@ func NewOrderUsecase(orderRepo domain.OrderRepository) domain.OrderUsecase {
 	return &orderUsecase{orderRepo: orderRepo}
 }
 
+// convertValidationError converts the validator's validation error into domain.ValidationError
 func convertValidationError(err error, obj interface{}) *domain.ValidationError {
 	if err == nil {
 		return nil

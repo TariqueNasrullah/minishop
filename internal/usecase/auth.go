@@ -29,17 +29,24 @@ func (a *authUsecase) CreateUser(ctx context.Context, user domain.UserCreatePara
 }
 
 func (a *authUsecase) Login(ctx context.Context, request *domain.LoginRequest) (*domain.LoginResponse, error) {
-	// validation
+	// Basic validation. username and password in required. Instead of validating through validation package
+	// If checker is faster.
+	if request.Username == "" || request.Password == "" {
+		return nil, domain.BadRequestError
+	}
+
+	// Db Query with the Username
 	user, err := a.userRepo.GetByUsername(ctx, request.Username)
 	if err != nil {
 		return nil, err
 	}
 
+	// Compare request.Password with Stored Hashed Password
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return nil, domain.BadRequestError
 	}
 
-	// generate token
+	// Token Generation process
 	token, err := a.tokenService.Generate(ctx, minishipJwt.Payload{Aud: fmt.Sprint(user.ID), Name: user.Username})
 	if err != nil {
 		return nil, domain.InternalServerError

@@ -26,7 +26,9 @@ type Token struct {
 	Jti          string `json:"jti"`
 }
 
+// Generate generates an access and a refresh token
 func (t *TokenService) Generate(ctx context.Context, payload Payload) (Token, error) {
+	// unique identity of the generated token.
 	jti := uuid.New().String()
 
 	accessTokenGenerator := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -68,6 +70,8 @@ func (t *TokenService) Generate(ctx context.Context, payload Payload) (Token, er
 	}, nil
 }
 
+// Parse can be used to parse a jwt token. It also extracts claim from the token and returns with Payload.
+// It throws error if token is empty or invalid.
 func (t *TokenService) Parse(ctx context.Context, tokenString string) (Payload, error) {
 	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) { return t.key, nil }, jwt.WithValidMethods([]string{"HS256"}))
 	if err != nil {
