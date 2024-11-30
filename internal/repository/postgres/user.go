@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"github.com/minishop/internal/domain"
 	"gorm.io/gorm"
 	"time"
@@ -46,6 +47,10 @@ func (u *UserRepository) GetByUsername(ctx context.Context, s string) (domain.Us
 	repoUser := user{}
 	result := u.db.WithContext(ctx).First(&repoUser, "username = ?", s)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return domain.User{}, domain.NotFoundError
+		}
+
 		return domain.User{}, result.Error
 	}
 

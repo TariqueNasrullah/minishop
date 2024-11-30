@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
+	httpError "github.com/minishop/internal/delivery/rest/errors"
 	"github.com/minishop/internal/delivery/rest/middleware"
 	"github.com/minishop/internal/domain"
 	"net/http"
@@ -29,7 +31,10 @@ func (a *AuthController) login(c echo.Context) error {
 
 	auth, err := a.authUsecase.Login(c.Request().Context(), &loginRequest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		if errors.Is(err, domain.BadRequestError) || errors.Is(err, domain.NotFoundError) {
+			return c.JSON(http.StatusBadRequest, httpError.HTTPError{Message: "The user credentials were incorrect.", Type: "error", Code: http.StatusBadRequest})
+		}
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, auth)

@@ -1,6 +1,7 @@
 app:
   access_token_duration: 3600
   refresh_token_duration: 5000
+  jwt_secret_key: Im5hbWUiOiIwMTkwMTkwMTkwMUBtYWlsaW5hdG9yLmNvbSIsInRva2VuX3R5cGUiOiJhY2Nlc3MifQ
 postgres:
   host: localhost
   port: 5432

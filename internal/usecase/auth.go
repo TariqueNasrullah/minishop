@@ -36,13 +36,13 @@ func (a *authUsecase) Login(ctx context.Context, request *domain.LoginRequest) (
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		return nil, err
+		return nil, domain.BadRequestError
 	}
 
 	// generate token
 	token, err := a.tokenService.Generate(ctx, minishipJwt.Payload{Aud: fmt.Sprint(user.ID), Name: user.Username})
 	if err != nil {
-		return nil, err
+		return nil, domain.InternalServerError
 	}
 
 	return &domain.LoginResponse{
