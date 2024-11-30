@@ -23,6 +23,19 @@ A minimalistic online shopping service written in go.
 ```
 By default, the docker compose uses the `config.docker.yml` file.
 
+By Default the backend service runs on port 8080. You can change the configuration from the config file.
+Test 
+
+The connection.
+```curl
+curl --location 'http://loclahost:8080/api/v1/login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "01901901901@mailinator.com",
+    "password": "321dsa"
+}'
+```
+
 ## Project Architecture
 
 Libraary used
