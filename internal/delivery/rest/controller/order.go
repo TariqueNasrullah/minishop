@@ -18,6 +18,7 @@ func NewOrderController(e *echo.Group, orderUsecase domain.OrderUsecase, authMid
 	controller := &OrderController{orderUsecase: orderUsecase}
 
 	e.POST("/orders", authMiddleware.AuthRequired(controller.createOrder))
+	e.PUT("/orders/:consignment_id/cancel", authMiddleware.AuthRequired(controller.cancelOrder))
 	return controller
 }
 
@@ -59,4 +60,33 @@ func (o *OrderController) createOrder(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, ord)
+}
+
+func (o *OrderController) cancelOrder(c echo.Context) error {
+	var (
+		audStr string
+		aud    uint64
+		ok     bool
+		err    error
+	)
+
+	audStr, ok = c.Get("aud").(string)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
+	}
+	if aud, err = strconv.ParseUint(audStr, 10, 64); err != nil {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
+	}
+
+	consignmentId := c.Param("consignment_id")
+	if consignmentId == "" {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.HTTPError{Message: "Bad Request", Type: "error", Code: http.StatusBadRequest})
+	}
+
+	cancelError := o.orderUsecase.Cancel(c.Request().Context(), consignmentId, aud)
+	if cancelError != nil {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.HTTPError{Message: "Please contact cx to cancel order", Type: "error", Code: http.StatusBadRequest})
+	}
+
+	return c.JSON(http.StatusOK, HttpResponse{Message: "Order Cancelled Successfully", Type: "success", Code: http.StatusOK})
 }

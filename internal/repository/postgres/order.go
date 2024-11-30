@@ -53,7 +53,12 @@ func (o *OrderRepository) Create(ctx context.Context, params domain.Order) (crea
 }
 
 func (o *OrderRepository) Cancel(ctx context.Context, consignmentId string, userID uint64) error {
-	result := o.db.WithContext(ctx).Model(&user{}).Where("consignment_id = ?", consignmentId).Update("order_status", domain.OrderStatusCanceled)
+	result := o.db.WithContext(ctx).Model(&order{}).Where(
+		"order_consignment_id = ?", consignmentId).Updates(map[string]interface{}{
+		"order_status": domain.OrderStatusCanceled,
+		"updated_by":   userID,
+		"updated_at":   time.Now(),
+	})
 	if result.Error != nil {
 		return result.Error
 	}
