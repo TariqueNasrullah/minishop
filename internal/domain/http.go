@@ -1,4 +1,4 @@
-package controller
+package domain
 
 type HttpResponse struct {
 	Message string      `json:"message,omitempty"`

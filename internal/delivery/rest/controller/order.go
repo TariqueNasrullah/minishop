@@ -78,7 +78,7 @@ func (o *OrderController) cancelOrder(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, minishopHttpError.HTTPError{Message: "Please contact cx to cancel order", Type: "error", Code: http.StatusBadRequest})
 	}
 
-	return c.JSON(http.StatusOK, HttpResponse{Message: "Order Cancelled Successfully", Type: "success", Code: http.StatusOK})
+	return c.JSON(http.StatusOK, domain.HttpResponse{Message: "Order Cancelled Successfully", Type: "success", Code: http.StatusOK})
 }
 
 func (o *OrderController) orderList(c echo.Context) error {
