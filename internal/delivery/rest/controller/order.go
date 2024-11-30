@@ -7,6 +7,7 @@ import (
 	"github.com/minishop/internal/delivery/rest/middleware"
 	"github.com/minishop/internal/domain"
 	"net/http"
+	"strconv"
 )
 
 type OrderController struct {
@@ -21,10 +22,27 @@ func NewOrderController(e *echo.Group, orderUsecase domain.OrderUsecase, authMid
 }
 
 func (o *OrderController) createOrder(c echo.Context) error {
+
+	var (
+		audStr string
+		aud    uint64
+		ok     bool
+		err    error
+	)
+
+	audStr, ok = c.Get("aud").(string)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
+	}
+	if aud, err = strconv.ParseUint(audStr, 10, 64); err != nil {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
+	}
+
 	var orderRequest domain.OrderCreateParameters
 	if err := c.Bind(&orderRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
+	orderRequest.CreatedBy = aud
 
 	ord, err := o.orderUsecase.Create(c.Request().Context(), orderRequest)
 	if err != nil {

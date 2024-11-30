@@ -26,15 +26,16 @@ type OrderCreateParameters struct {
 	SpecialInstruction string  `json:"special_instruction"`
 	ItemQuantity       int     `json:"item_quantity" validate:"required,eq=1"`
 	ItemWeight         float64 `json:"item_weight" validate:"required,eq=0.5"`
-	AmountToCollect    string  `json:"amount_to_collect" validate:"required,gt=0"`
+	AmountToCollect    int     `json:"amount_to_collect" validate:"required,gt=0"`
 	ItemDescription    string  `json:"item_description"`
+	CreatedBy          uint64  `json:"created_by"`
 }
 
 type OrderCreateResponse struct {
-	ConsignmentId   string `json:"consignment_id"`
-	MerchantOrderId string `json:"merchant_order_id"`
-	OrderStatus     string `json:"order_status"`
-	DeliveryFee     int    `json:"delivery_fee"`
+	ConsignmentId   string  `json:"consignment_id"`
+	MerchantOrderId string  `json:"merchant_order_id"`
+	OrderStatus     string  `json:"order_status"`
+	DeliveryFee     float64 `json:"delivery_fee"`
 }
 
 type Order struct {
@@ -46,13 +47,13 @@ type Order struct {
 	RecipientAddress   string      `json:"recipient_address"`
 	RecipientPhone     string      `json:"recipient_phone"`
 	OrderAmount        int         `json:"order_amount"`
-	TotalFee           int         `json:"total_fee"`
+	TotalFee           float64     `json:"total_fee"`
 	Instruction        string      `json:"instruction"`
 	OrderTypeId        int         `json:"order_type_id"`
-	CodFee             int         `json:"cod_fee"`
+	CodFee             float64     `json:"cod_fee"`
 	PromoDiscount      int         `json:"promo_discount"`
 	Discount           int         `json:"discount"`
-	DeliveryFee        int         `json:"delivery_fee"`
+	DeliveryFee        float64     `json:"delivery_fee"`
 	OrderStatus        OrderStatus `json:"order_status"`
 	OrderType          string      `json:"order_type"`
 	ItemType           string      `json:"item_type"`
@@ -73,13 +74,13 @@ type OrderListParameters struct {
 }
 
 type OrderRepository interface {
-	Create(ctx context.Context, params OrderCreateParameters) (Order, error)
+	Create(ctx context.Context, params Order) (OrderCreateResponse, error)
 	Cancel(ctx context.Context, consignmentId string, userID uint64) error
 	List(ctx context.Context, parameters OrderListParameters) ([]Order, error)
 }
 
 type OrderUsecase interface {
-	Create(ctx context.Context, params OrderCreateParameters) (Order, error)
+	Create(ctx context.Context, params OrderCreateParameters) (OrderCreateResponse, error)
 	Cancel(ctx context.Context, consignmentId string, userID uint64) error
 	List(ctx context.Context, parameters OrderListParameters) ([]Order, error)
 }

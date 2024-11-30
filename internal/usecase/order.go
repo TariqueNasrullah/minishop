@@ -2,12 +2,16 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/minishop/internal/domain"
+	"math"
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var (
@@ -18,16 +22,65 @@ type orderUsecase struct {
 	orderRepo domain.OrderRepository
 }
 
-func (o *orderUsecase) Create(ctx context.Context, params domain.OrderCreateParameters) (domain.Order, error) {
-	if err := validate.Struct(params); err != nil {
+func (o *orderUsecase) Create(ctx context.Context, params domain.OrderCreateParameters) (createResp domain.OrderCreateResponse, err error) {
+	if params.CreatedBy == 0 {
+		return createResp, errors.New("user id not passed")
+	}
+
+	if err = validate.Struct(params); err != nil {
 		validationErr := convertValidationError(err, params)
 		if validationErr != nil {
-			return domain.Order{}, validationErr
+			return createResp, validationErr
 		}
 
-		return domain.Order{}, err
+		return createResp, err
 	}
-	return o.orderRepo.Create(ctx, params)
+
+	var (
+		baseFee     = 60.0
+		deliveryFee = 0.0
+		codFee      = 0.0
+	)
+	if params.RecipientCity != 1 {
+		baseFee = 100.0
+	}
+
+	if params.ItemWeight <= 0.5 {
+		deliveryFee = baseFee
+	} else if params.ItemWeight <= 1.0 {
+		deliveryFee = baseFee + 10
+	} else {
+		deliveryFee = baseFee + 15*math.Ceil(params.ItemWeight-1.0)
+	}
+
+	codFee = float64(params.AmountToCollect) * 0.01
+
+	order := domain.Order{
+		OrderConsignmentId: uuid.New().String(),
+		OrderCreatedAt:     time.Now(),
+		OrderDescription:   params.ItemDescription,
+		MerchantOrderId:    params.MerchantOrderId,
+		RecipientName:      params.RecipientName,
+		RecipientAddress:   params.RecipientAddress,
+		RecipientPhone:     params.RecipientPhone,
+		OrderAmount:        params.AmountToCollect,
+		TotalFee:           deliveryFee + codFee,
+		Instruction:        params.SpecialInstruction,
+		OrderTypeId:        1,
+		CodFee:             codFee,
+		PromoDiscount:      0,
+		Discount:           0,
+		DeliveryFee:        deliveryFee,
+		OrderStatus:        domain.OrderStatusPending,
+		OrderType:          "Delivery",
+		ItemType:           "Parcel",
+		TransferStatus:     1,
+		Archive:            0,
+		CreatedBy:          params.CreatedBy,
+		UpdatedBy:          params.CreatedBy,
+	}
+
+	return o.orderRepo.Create(ctx, order)
 }
 
 func (o *orderUsecase) Cancel(ctx context.Context, consignmentId string, userID uint64) error {

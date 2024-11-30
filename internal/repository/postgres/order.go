@@ -12,63 +12,44 @@ type OrderRepository struct {
 	db *gorm.DB
 }
 
-func (o *OrderRepository) Create(ctx context.Context, params domain.OrderCreateParameters) (domain.Order, error) {
+func (o *OrderRepository) Create(ctx context.Context, params domain.Order) (createResp domain.OrderCreateResponse, err error) {
 	repoOrder := order{
 		OrderConsignmentId: uuid.New().String(),
 		OrderCreatedAt:     time.Now(),
-		OrderDescription:   params.ItemDescription,
+		OrderDescription:   params.OrderDescription,
 		MerchantOrderId:    params.MerchantOrderId,
 		RecipientName:      params.RecipientName,
 		RecipientAddress:   params.RecipientAddress,
 		RecipientPhone:     params.RecipientPhone,
-		OrderAmount:        1200,
-		TotalFee:           72,
-		Instruction:        "",
-		OrderTypeId:        0,
-		CodFee:             0,
-		PromoDiscount:      0,
-		Discount:           0,
-		DeliveryFee:        0,
-		OrderStatus:        "",
-		OrderType:          "",
-		ItemType:           "",
-		TransferStatus:     0,
-		Archive:            0,
-		UpdatedAt:          time.Time{},
-		CreatedBy:          0,
-		UpdatedBy:          0,
+		OrderAmount:        params.OrderAmount,
+		TotalFee:           params.TotalFee,
+		Instruction:        params.Instruction,
+		OrderTypeId:        params.OrderTypeId,
+		CodFee:             params.CodFee,
+		PromoDiscount:      params.PromoDiscount,
+		Discount:           params.Discount,
+		DeliveryFee:        params.DeliveryFee,
+		OrderStatus:        string(params.OrderStatus),
+		OrderType:          params.OrderType,
+		ItemType:           params.ItemType,
+		TransferStatus:     params.TransferStatus,
+		Archive:            params.Archive,
+		UpdatedAt:          time.Now(),
+		CreatedBy:          params.CreatedBy,
+		UpdatedBy:          params.UpdatedBy,
 	}
 
 	result := o.db.WithContext(ctx).Create(&repoOrder)
 	if result.Error != nil {
-		return domain.Order{}, result.Error
+		return createResp, result.Error
 	}
 
-	return domain.Order{
-		OrderConsignmentId: repoOrder.OrderConsignmentId,
-		OrderCreatedAt:     repoOrder.OrderCreatedAt,
-		OrderDescription:   repoOrder.OrderDescription,
-		MerchantOrderId:    repoOrder.MerchantOrderId,
-		RecipientName:      repoOrder.RecipientName,
-		RecipientAddress:   repoOrder.RecipientAddress,
-		RecipientPhone:     repoOrder.RecipientPhone,
-		OrderAmount:        0,
-		TotalFee:           0,
-		Instruction:        "",
-		OrderTypeId:        0,
-		CodFee:             0,
-		PromoDiscount:      0,
-		Discount:           0,
-		DeliveryFee:        0,
-		OrderStatus:        "",
-		OrderType:          "",
-		ItemType:           "",
-		TransferStatus:     0,
-		Archive:            0,
-		UpdatedAt:          time.Time{},
-		CreatedBy:          0,
-		UpdatedBy:          0,
-	}, nil
+	return domain.OrderCreateResponse{
+		ConsignmentId:   repoOrder.OrderConsignmentId,
+		MerchantOrderId: repoOrder.MerchantOrderId,
+		OrderStatus:     repoOrder.OrderStatus,
+		DeliveryFee:     repoOrder.DeliveryFee,
+	}, err
 }
 
 func (o *OrderRepository) Cancel(ctx context.Context, consignmentId string, userID uint64) error {
@@ -103,13 +84,13 @@ type order struct {
 	RecipientAddress   string    `json:"recipient_address"`
 	RecipientPhone     string    `json:"recipient_phone"`
 	OrderAmount        int       `json:"order_amount"`
-	TotalFee           int       `json:"total_fee"`
+	TotalFee           float64   `json:"total_fee"`
 	Instruction        string    `json:"instruction"`
 	OrderTypeId        int       `json:"order_type_id"`
-	CodFee             int       `json:"cod_fee"`
+	CodFee             float64   `json:"cod_fee"`
 	PromoDiscount      int       `json:"promo_discount"`
 	Discount           int       `json:"discount"`
-	DeliveryFee        int       `json:"delivery_fee"`
+	DeliveryFee        float64   `json:"delivery_fee"`
 	OrderStatus        string    `json:"order_status"`
 	OrderType          string    `json:"order_type"`
 	ItemType           string    `json:"item_type"`
