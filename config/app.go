@@ -1,6 +1,9 @@
 package config
 
-import "time"
+import (
+	"github.com/spf13/viper"
+	"time"
+)
 
 type AppConfig struct {
 	AccessTokenDuration  time.Duration
@@ -11,4 +14,8 @@ var app AppConfig
 
 func App() AppConfig {
 	return app
+}
+
+func Load() error {
+	return viper.UnmarshalKey("app", &app)
 }

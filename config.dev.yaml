@@ -1,0 +1,3 @@
+app:
+  access_token_duration: 3600
+  refresh_token_duration: 5000

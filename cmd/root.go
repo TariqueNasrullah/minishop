@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/minishop/config"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -63,5 +64,10 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+
+		// Load Config
+		if loadingErr := config.Load(); loadingErr != nil {
+			fmt.Fprintln(os.Stderr, "Could not parse config:", loadingErr.Error())
+		}
 	}
 }
