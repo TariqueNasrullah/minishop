@@ -33,7 +33,7 @@ func (t *TokenService) Generate(ctx context.Context, payload Payload) (Token, er
 		"name":       payload.Name,
 		"jti":        jti,
 		"iat":        time.Now().Unix(),
-		"exp":        time.Now().Add(config.App().AccessTokenDuration).Unix(),
+		"exp":        time.Now().Add(time.Second * config.App().AccessTokenDuration).Unix(),
 		"token_type": "access",
 	})
 
@@ -42,7 +42,7 @@ func (t *TokenService) Generate(ctx context.Context, payload Payload) (Token, er
 		"name":       payload.Name,
 		"jti":        jti,
 		"iat":        time.Now().Unix(),
-		"exp":        time.Now().Add(config.App().RefreshTokenDuration).Unix(),
+		"exp":        time.Now().Add(time.Second * config.App().RefreshTokenDuration).Unix(),
 		"token_type": "refresh",
 	})
 
