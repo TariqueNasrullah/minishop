@@ -280,41 +280,43 @@ Status code: 200 (Success blank list)
 Status code: 200 (Success With Data)
 ```json
 {
-  "message": "Orders successfully fetched.",
-  "type": "success",
   "code": 200,
-  "data": [
-    {
-      "order_consignment_id": "2fdcb4dd-3f79-4d37-b1c5-da9a45a7a093",
-      "order_created_at": "2024-11-30T20:20:58.51797+06:00",
-      "order_description": "Fragile",
-      "merchant_order_id": "AUEDUH1134498",
-      "recipient_name": "Tarique",
-      "recipient_address": "banani, gulshan 2, dhaka, bangladesh",
-      "recipient_phone": "01637161343",
-      "order_amount": 1300,
-      "total_fee": 73,
-      "instruction": "Leave At the door",
-      "order_type_id": 1,
-      "cod_fee": 13,
-      "promo_discount": 0,
-      "discount": 0,
-      "delivery_fee": 60,
-      "order_status": "Pending",
-      "order_type": "Delivery",
-      "item_type": "Parcel",
-      "transfer_status": 1,
-      "archive": 0,
-      "updated_at": "2024-11-30T20:20:58.517971+06:00",
-      "created_by": 2,
-      "updated_by": 2
-    }
-  ],
-  "total": 1,
-  "current_page": 1,
-  "per_page": 1,
-  "total_in_page": 1,
-  "last_page": 1
+  "data": {
+    "data": [
+      {
+        "order_consignment_id": "2fdcb4dd-3f79-4d37-b1c5-da9a45a7a093",
+        "order_created_at": "2024-11-30T20:20:58.51797+06:00",
+        "order_description": "Fragile",
+        "merchant_order_id": "AUEDUH1134498",
+        "recipient_name": "Tarique",
+        "recipient_address": "banani, gulshan 2, dhaka, bangladesh",
+        "recipient_phone": "0**3",
+        "order_amount": 1300,
+        "total_fee": 73,
+        "instruction": "Leave At the door",
+        "order_type_id": 1,
+        "cod_fee": 13,
+        "promo_discount": 0,
+        "discount": 0,
+        "delivery_fee": 60,
+        "order_status": "Pending",
+        "order_type": "Delivery",
+        "item_type": "Parcel",
+        "transfer_status": 1,
+        "archive": 0,
+        "updated_at": "2024-11-30T20:20:58.517971+06:00",
+        "created_by": 2,
+        "updated_by": 2
+      }
+    ],
+    "total": 1,
+    "current_page": 1,
+    "per_page": 12,
+    "total_in_page": 1,
+    "last_page": 1
+  },
+  "message": "Orders successfully fetched.",
+  "type": "success"
 }
 ```
 
