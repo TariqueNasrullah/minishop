@@ -1,11 +1,11 @@
 package domain
 
-import (
-	"errors"
-	"net/http"
-)
+import "fmt"
 
-var (
-	ErrorUnauthorized = errors.New("Unauthorized")
-	a                 = http.StatusAccepted
-)
+type ValidationError struct {
+	ErrorMap map[string][]string
+}
+
+func (ve *ValidationError) Error() string {
+	return fmt.Sprintf("Validation Errors: %v", ve.ErrorMap)
+}

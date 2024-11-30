@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/minishop/config"
 	"github.com/minishop/internal/domain"
 	minishopJwt "github.com/minishop/internal/pkg/jwt"
@@ -29,6 +30,7 @@ var seekCmd = &cobra.Command{
 		}
 
 		uRepo := postgresRepo.NewUserRepository(db)
+		orderRepo := postgresRepo.NewOrderRepository(db)
 
 		jwtService := minishopJwt.NewTokenService([]byte(config.App().JwtSecretKey))
 		authUseCase := usecase.NewAuthUsecase(uRepo, jwtService)
@@ -41,8 +43,13 @@ var seekCmd = &cobra.Command{
 			Username: "01901901901@mailinator.com",
 			Password: "321dsaf",
 		}); err != nil {
+			fmt.Println("could not insert dummy user: ", err)
+		}
+
+		if err = orderRepo.AutoMigrate(); err != nil {
 			return err
 		}
+
 		return nil
 	},
 }

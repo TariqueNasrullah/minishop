@@ -25,16 +25,19 @@ func New(ctx context.Context) *http.Server {
 	}
 
 	uRepo := postgresRepo.NewUserRepository(db)
+	orderRepo := postgresRepo.NewOrderRepository(db)
 
 	jwtService := minishopJwt.NewTokenService([]byte(config.App().JwtSecretKey))
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
 	authUcase := usecase.NewAuthUsecase(uRepo, jwtService)
+	orderUcase := usecase.NewOrderUsecase(orderRepo)
 
 	e := echo.New()
 	v1Router := e.Group("/api/v1")
 
 	controller.NewAuthController(v1Router, authUcase, authMiddleware)
+	controller.NewOrderController(v1Router, orderUcase, authMiddleware)
 
 	srv := http.Server{
 		Addr:         ":8080",
