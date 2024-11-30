@@ -6,7 +6,9 @@ package cmd
 
 import (
 	"context"
+	"github.com/minishop/config"
 	"github.com/minishop/internal/domain"
+	minishopJwt "github.com/minishop/internal/pkg/jwt"
 	postgresRepo "github.com/minishop/internal/repository/postgres"
 	"github.com/minishop/internal/usecase"
 	"gorm.io/driver/postgres"
@@ -27,7 +29,9 @@ var seekCmd = &cobra.Command{
 		}
 
 		uRepo := postgresRepo.NewUserRepository(db)
-		authUseCase := usecase.NewAuthUsecase(uRepo)
+
+		jwtService := minishopJwt.NewTokenService([]byte(config.App().JwtSecretKey))
+		authUseCase := usecase.NewAuthUsecase(uRepo, jwtService)
 
 		if err = uRepo.AutoMigrate(); err != nil {
 			return err

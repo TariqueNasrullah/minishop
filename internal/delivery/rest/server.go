@@ -3,7 +3,10 @@ package rest
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	"github.com/minishop/config"
 	"github.com/minishop/internal/delivery/rest/controller"
+	"github.com/minishop/internal/delivery/rest/middleware"
+	minishopJwt "github.com/minishop/internal/pkg/jwt"
 	postgresRepo "github.com/minishop/internal/repository/postgres"
 	"github.com/minishop/internal/usecase"
 	"gorm.io/driver/postgres"
@@ -22,12 +25,16 @@ func New(ctx context.Context) *http.Server {
 	}
 
 	uRepo := postgresRepo.NewUserRepository(db)
-	authUcase := usecase.NewAuthUsecase(uRepo)
+
+	jwtService := minishopJwt.NewTokenService([]byte(config.App().JwtSecretKey))
+	authMiddleware := middleware.NewAuthMiddleware(jwtService)
+
+	authUcase := usecase.NewAuthUsecase(uRepo, jwtService)
 
 	e := echo.New()
 	v1Router := e.Group("/api/v1")
 
-	controller.NewAuthController(v1Router, authUcase)
+	controller.NewAuthController(v1Router, authUcase, authMiddleware)
 
 	srv := http.Server{
 		Addr:         ":8080",

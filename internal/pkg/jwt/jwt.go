@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"context"
+	"errors"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/minishop/config"
@@ -65,6 +66,27 @@ func (t *TokenService) Generate(ctx context.Context, payload Payload) (Token, er
 		ExpiresIn:    int64(config.App().RefreshTokenDuration),
 		Jti:          jti,
 	}, nil
+}
+
+func (t *TokenService) Parse(ctx context.Context, tokenString string) (Payload, error) {
+	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) { return t.key, nil }, jwt.WithValidMethods([]string{"HS256"}))
+	if err != nil {
+		return Payload{}, err
+	}
+
+	if !parsedToken.Valid {
+		return Payload{}, errors.New("invalid token")
+	}
+
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
+		var p Payload
+		p.Aud, ok = claims["aud"].(string)
+		p.Name = claims["name"].(string)
+		return p, nil
+	}
+
+	// No claim is unexpected
+	return Payload{}, errors.New("invalid token")
 }
 
 func NewTokenService(key []byte) *TokenService {

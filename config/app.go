@@ -6,8 +6,9 @@ import (
 )
 
 type AppConfig struct {
-	AccessTokenDuration  time.Duration
-	RefreshTokenDuration time.Duration
+	AccessTokenDuration  time.Duration `mapstructure:"access_token_duration"`
+	RefreshTokenDuration time.Duration `mapstructure:"refresh_token_duration"`
+	JwtSecretKey         string        `mapstructure:"jwt_secret_key"`
 }
 
 var app AppConfig

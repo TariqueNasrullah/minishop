@@ -10,7 +10,7 @@ import (
 
 type authUsecase struct {
 	userRepo     domain.UserRepository
-	tokenService minishipJwt.TokenService
+	tokenService *minishipJwt.TokenService
 }
 
 func (a *authUsecase) CreateUser(ctx context.Context, user domain.UserCreateParameters) (domain.User, error) {
@@ -53,6 +53,6 @@ func (a *authUsecase) Login(ctx context.Context, request *domain.LoginRequest) (
 	}, nil
 }
 
-func NewAuthUsecase(userRepo domain.UserRepository) domain.AuthUsecase {
-	return &authUsecase{userRepo: userRepo}
+func NewAuthUsecase(userRepo domain.UserRepository, tokenService *minishipJwt.TokenService) domain.AuthUsecase {
+	return &authUsecase{userRepo: userRepo, tokenService: tokenService}
 }
