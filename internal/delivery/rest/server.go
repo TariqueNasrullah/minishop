@@ -49,7 +49,7 @@ func New(ctx context.Context) *http.Server {
 	controller.NewOrderController(v1Router, orderUcase, authMiddleware)
 
 	srv := http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%d", config.App().Port),
 		Handler:      e,
 		ReadTimeout:  time.Second * 100,
 		WriteTimeout: time.Second * 100,

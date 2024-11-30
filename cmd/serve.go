@@ -8,6 +8,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/minishop/config"
 	"github.com/minishop/internal/delivery/rest"
 	"github.com/spf13/cobra"
 	"os"
@@ -30,7 +31,7 @@ var serveCmd = &cobra.Command{
 		var err error
 
 		go func() {
-			fmt.Println("Serving on port :8080")
+			fmt.Println("Serving on port :", config.App().Port)
 			srvErr <- srv.ListenAndServe()
 		}()
 
