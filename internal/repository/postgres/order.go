@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/minishop/internal/domain"
 	"gorm.io/gorm"
+	"math"
 	"time"
 )
 
@@ -65,18 +66,55 @@ func (o *OrderRepository) Cancel(ctx context.Context, consignmentId string, user
 	return nil
 }
 
-func (o *OrderRepository) List(ctx context.Context, parameters domain.OrderListParameters) ([]domain.Order, error) {
+func (o *OrderRepository) List(ctx context.Context, parameters domain.OrderListParameters) (domain.OrderListResponse, error) {
+	var (
+		limit, page, offset int64
+		total, totalPages   int64
+	)
+
+	limit = parameters.Limit
+	if limit < 1 || limit > 100 {
+		limit = 100
+	}
+	page = parameters.Page
+	if page < 1 {
+		page = 1
+	}
+
+	offset = (page - 1) * limit
+
+	query := o.db.WithContext(ctx).Model(&order{})
+
+	if countRes := query.Where("created_by = ? AND transfer_status = ? AND archive = ?",
+		parameters.CreatedBy, parameters.TransferStatus, parameters.Archive).Count(&total); countRes.Error != nil {
+		return domain.OrderListResponse{}, countRes.Error
+	}
+
 	var orders []order
-	result := o.db.WithContext(ctx).Limit(parameters.Limit).Offset(parameters.Page).Find(&orders,
+	result := o.db.WithContext(ctx).Limit(int(limit)).Offset(int(offset)).Find(&orders,
 		"created_by = ? AND transfer_status = ? AND archive = ?",
 		parameters.CreatedBy, parameters.TransferStatus, parameters.Archive,
 	)
 
 	if result.Error != nil {
-		return nil, result.Error
+		return domain.OrderListResponse{}, result.Error
 	}
 
-	return []domain.Order{}, nil
+	totalPages = int64(math.Ceil(float64(total) / float64(limit)))
+
+	var domainOrders = make([]domain.Order, len(orders))
+	for idx, ord := range orders {
+		domainOrders[idx] = ord.convertToDomainOrder()
+	}
+
+	return domain.OrderListResponse{
+		Data:        domainOrders,
+		Total:       uint64(total),
+		CurrentPage: uint64(page),
+		PerPage:     uint64(limit),
+		TotalInPage: uint64(len(domainOrders)),
+		LastPage:    uint64(totalPages),
+	}, nil
 }
 
 type order struct {
@@ -105,6 +143,34 @@ type order struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedBy uint64    `json:"created_by"`
 	UpdatedBy uint64    `json:"updated_by"`
+}
+
+func (o order) convertToDomainOrder() domain.Order {
+	return domain.Order{
+		OrderConsignmentId: o.OrderConsignmentId,
+		OrderCreatedAt:     o.OrderCreatedAt,
+		OrderDescription:   o.OrderDescription,
+		MerchantOrderId:    o.MerchantOrderId,
+		RecipientName:      o.RecipientName,
+		RecipientAddress:   o.RecipientAddress,
+		RecipientPhone:     o.RecipientPhone,
+		OrderAmount:        o.OrderAmount,
+		TotalFee:           o.TotalFee,
+		Instruction:        o.Instruction,
+		OrderTypeId:        o.OrderTypeId,
+		CodFee:             o.CodFee,
+		PromoDiscount:      o.PromoDiscount,
+		Discount:           o.Discount,
+		DeliveryFee:        o.DeliveryFee,
+		OrderStatus:        domain.OrderStatus(o.OrderStatus),
+		OrderType:          o.OrderType,
+		ItemType:           o.ItemType,
+		TransferStatus:     o.TransferStatus,
+		Archive:            o.Archive,
+		UpdatedAt:          o.UpdatedAt,
+		CreatedBy:          o.CreatedBy,
+		UpdatedBy:          o.UpdatedBy,
+	}
 }
 
 func NewOrderRepository(db *gorm.DB) *OrderRepository {

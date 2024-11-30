@@ -87,7 +87,7 @@ func (o *orderUsecase) Cancel(ctx context.Context, consignmentId string, userID 
 	return o.orderRepo.Cancel(ctx, consignmentId, userID)
 }
 
-func (o *orderUsecase) List(ctx context.Context, parameters domain.OrderListParameters) ([]domain.Order, error) {
+func (o *orderUsecase) List(ctx context.Context, parameters domain.OrderListParameters) (domain.OrderListResponse, error) {
 	return o.orderRepo.List(ctx, parameters)
 }
 

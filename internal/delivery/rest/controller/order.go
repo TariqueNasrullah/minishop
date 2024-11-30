@@ -19,23 +19,19 @@ func NewOrderController(e *echo.Group, orderUsecase domain.OrderUsecase, authMid
 
 	e.POST("/orders", authMiddleware.AuthRequired(controller.createOrder))
 	e.PUT("/orders/:consignment_id/cancel", authMiddleware.AuthRequired(controller.cancelOrder))
+	e.GET("/orders/all", authMiddleware.AuthRequired(controller.orderList))
 	return controller
 }
 
 func (o *OrderController) createOrder(c echo.Context) error {
 
 	var (
-		audStr string
-		aud    uint64
-		ok     bool
-		err    error
+		aud uint64
+		ok  bool
+		err error
 	)
 
-	audStr, ok = c.Get("aud").(string)
-	if !ok {
-		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
-	}
-	if aud, err = strconv.ParseUint(audStr, 10, 64); err != nil {
+	if aud, ok = extractAud(c); !ok {
 		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
 	}
 
@@ -64,17 +60,11 @@ func (o *OrderController) createOrder(c echo.Context) error {
 
 func (o *OrderController) cancelOrder(c echo.Context) error {
 	var (
-		audStr string
-		aud    uint64
-		ok     bool
-		err    error
+		aud uint64
+		ok  bool
 	)
 
-	audStr, ok = c.Get("aud").(string)
-	if !ok {
-		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
-	}
-	if aud, err = strconv.ParseUint(audStr, 10, 64); err != nil {
+	if aud, ok = extractAud(c); !ok {
 		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
 	}
 
@@ -89,4 +79,68 @@ func (o *OrderController) cancelOrder(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, HttpResponse{Message: "Order Cancelled Successfully", Type: "success", Code: http.StatusOK})
+}
+
+func (o *OrderController) orderList(c echo.Context) error {
+	var (
+		aud uint64
+		ok  bool
+	)
+
+	if aud, ok = extractAud(c); !ok {
+		return c.JSON(http.StatusBadRequest, minishopHttpError.Unauthrized)
+	}
+
+	limit, page := parsePaginationQuery(c)
+
+	transferStatusStr := c.QueryParam("transfer_status")
+	archiveStr := c.QueryParam("archive")
+
+	transferStat, _ := strconv.Atoi(transferStatusStr)
+	archive, _ := strconv.Atoi(archiveStr)
+
+	orderList, err := o.orderUsecase.List(c.Request().Context(), domain.OrderListParameters{
+		Limit:          int64(limit),
+		Page:           int64(page),
+		TransferStatus: uint8(transferStat),
+		Archive:        uint8(archive),
+		CreatedBy:      aud,
+	})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, minishopHttpError.HTTPError{Message: "Inter Server error", Type: "error", Code: http.StatusInternalServerError})
+	}
+
+	return c.JSON(http.StatusOK, orderList)
+}
+
+func extractAud(c echo.Context) (aud uint64, ok bool) {
+	var (
+		audStr string
+		err    error
+	)
+
+	audStr, ok = c.Get("aud").(string)
+	if !ok {
+		return
+	}
+
+	if aud, err = strconv.ParseUint(audStr, 10, 64); err != nil || aud == 0 {
+		return 0, false
+	}
+
+	return aud, true
+}
+
+func parsePaginationQuery(c echo.Context) (limit, page int) {
+	limitStr := c.QueryParam("limit")
+	pageStr := c.QueryParam("page")
+
+	limit, _ = strconv.Atoi(limitStr)
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	return limit, page
 }

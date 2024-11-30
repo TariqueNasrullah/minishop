@@ -66,21 +66,30 @@ type Order struct {
 }
 
 type OrderListParameters struct {
-	Limit          int    `json:"limit"`
-	Page           int    `json:"page"`
+	Limit          int64  `json:"limit"`
+	Page           int64  `json:"page"`
 	TransferStatus uint8  `json:"transfer_status"`
 	Archive        uint8  `json:"archive"`
 	CreatedBy      uint64 `json:"created_by"`
 }
 
+type OrderListResponse struct {
+	Data        []Order `json:"data"`
+	Total       uint64  `json:"total"`
+	CurrentPage uint64  `json:"current_page"`
+	PerPage     uint64  `json:"per_page"`
+	TotalInPage uint64  `json:"total_in_page"`
+	LastPage    uint64  `json:"last_page"`
+}
+
 type OrderRepository interface {
 	Create(ctx context.Context, params Order) (OrderCreateResponse, error)
 	Cancel(ctx context.Context, consignmentId string, userID uint64) error
-	List(ctx context.Context, parameters OrderListParameters) ([]Order, error)
+	List(ctx context.Context, parameters OrderListParameters) (OrderListResponse, error)
 }
 
 type OrderUsecase interface {
 	Create(ctx context.Context, params OrderCreateParameters) (OrderCreateResponse, error)
 	Cancel(ctx context.Context, consignmentId string, userID uint64) error
-	List(ctx context.Context, parameters OrderListParameters) ([]Order, error)
+	List(ctx context.Context, parameters OrderListParameters) (OrderListResponse, error)
 }
