@@ -18,4 +18,4 @@ COPY ./config.dev.yaml config.dev.yaml
 
 EXPOSE 8080
 ENTRYPOINT ["/minishop"]
-CMD ["--config=config.dev.yaml", "serve"]
+CMD ["--config=config.docker.yaml", "serve"]
