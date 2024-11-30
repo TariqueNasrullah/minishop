@@ -1,9 +1,11 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Tarique M Nasrullah nasrullahtarique@gmail.com
 
 */
 package main
 
-func main() {
+import "github.com/minishop/cmd"
 
+func main() {
+	cmd.Execute()
 }
