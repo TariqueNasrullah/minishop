@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"github.com/labstack/echo/v4"
 	"github.com/minishop/internal/delivery/rest/controller"
 	postgresRepo "github.com/minishop/internal/repository/postgres"
 	"github.com/minishop/internal/usecase"
@@ -23,20 +24,14 @@ func New(ctx context.Context) *http.Server {
 	uRepo := postgresRepo.NewUserRepository(db)
 	authUcase := usecase.NewAuthUsecase(uRepo)
 
-	authController := controller.NewAuthController(authUcase)
+	e := echo.New()
+	v1Router := e.Group("/api/v1")
 
-	router := http.NewServeMux()
-
-	router.HandleFunc("/version", func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusOK)
-	})
-
-	router.Handle("/v1/", http.StripPrefix("/v1", authController.Handle()))
+	controller.NewAuthController(v1Router, authUcase)
 
 	srv := http.Server{
 		Addr:         ":8080",
-		Handler:      router,
+		Handler:      e,
 		ReadTimeout:  time.Second * 100,
 		WriteTimeout: time.Second * 100,
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
+	"github.com/labstack/echo/v4"
 	"github.com/minishop/internal/domain"
 	"net/http"
 	"time"
@@ -11,46 +11,30 @@ type AuthController struct {
 	authUsecase domain.AuthUsecase
 }
 
-func NewAuthController(authUsecase domain.AuthUsecase) *AuthController {
-	return &AuthController{authUsecase: authUsecase}
+func NewAuthController(e *echo.Group, authUsecase domain.AuthUsecase) *AuthController {
+	controller := &AuthController{authUsecase: authUsecase}
+
+	e.POST("/login", controller.login)
+	e.GET("/logout", controller.logout)
+
+	return controller
 }
 
-func (a *AuthController) login(w http.ResponseWriter, r *http.Request) {
+func (a *AuthController) login(c echo.Context) error {
 	var loginRequest domain.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := c.Bind(&loginRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, nil)
 	}
 
-	auth, err := a.authUsecase.Login(r.Context(), &loginRequest)
+	auth, err := a.authUsecase.Login(c.Request().Context(), &loginRequest)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	bt, err := json.Marshal(auth)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = w.Write(bt)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	return c.JSON(http.StatusOK, auth)
 }
 
-func (a *AuthController) logout(w http.ResponseWriter, r *http.Request) {
+func (a *AuthController) logout(c echo.Context) error {
 	time.Sleep(time.Second * 8)
-	w.WriteHeader(http.StatusBadRequest)
-	w.Write([]byte("ok!"))
-}
-
-func (a *AuthController) Handle() *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc("POST /login", a.login)
-	mux.HandleFunc("/logout", a.logout)
-
-	return mux
+	return c.JSON(http.StatusOK, "ok!")
 }
