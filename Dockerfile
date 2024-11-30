@@ -14,7 +14,7 @@ RUN go build -o /minishop
 
 FROM ubuntu
 COPY --from=build /minishop /minishop
-COPY ./config.dev.yaml config.dev.yaml
+COPY ./config.docker.yaml config.docker.yaml
 
 EXPOSE 8080
 ENTRYPOINT ["/minishop"]
