@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// AppConfig is the application configuration type.
 type AppConfig struct {
 	AccessTokenDuration  time.Duration `mapstructure:"access_token_duration"`
 	RefreshTokenDuration time.Duration `mapstructure:"refresh_token_duration"`
@@ -18,6 +19,7 @@ func App() AppConfig {
 	return app
 }
 
+// PostgresConfig holds Postgresql db configuration
 type PostgresConfig struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
@@ -34,6 +36,7 @@ func Postgres() PostgresConfig {
 	return postgres
 }
 
+// Load parse the env/configuration file to the config variables.
 func Load() error {
 	if err := viper.UnmarshalKey("app", &app); err != nil {
 		return err
