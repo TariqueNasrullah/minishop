@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/minishop/config"
 	"github.com/minishop/internal/delivery/rest/controller"
@@ -18,7 +19,15 @@ import (
 )
 
 func New(ctx context.Context) *http.Server {
-	dsn := "host=localhost user=minishop password=supersecretpasswd dbname=minishop port=5432 sslmode=disable TimeZone=Asia/Dhaka"
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
+		config.Postgres().Host,
+		config.Postgres().User,
+		config.Postgres().Password,
+		config.Postgres().DbName,
+		config.Postgres().Port,
+		config.Postgres().SSLMode,
+		config.Postgres().Timezone,
+	)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true})
 	if err != nil {
 		os.Exit(1)

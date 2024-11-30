@@ -23,7 +23,16 @@ var seekCmd = &cobra.Command{
 	Use:   "seek",
 	Short: "Initialize db with dummy data",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		dsn := "host=localhost user=minishop password=supersecretpasswd dbname=minishop port=5432 sslmode=disable TimeZone=Asia/Dhaka"
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
+			config.Postgres().Host,
+			config.Postgres().User,
+			config.Postgres().Password,
+			config.Postgres().DbName,
+			config.Postgres().Port,
+			config.Postgres().SSLMode,
+			config.Postgres().Timezone,
+		)
+
 		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {
 			return err

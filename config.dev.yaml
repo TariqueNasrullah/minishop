@@ -1,3 +1,11 @@
 app:
   access_token_duration: 3600
   refresh_token_duration: 5000
+postgres:
+  host: localhost
+  port: 5432
+  user: minishop
+  password: supersecretpasswd
+  db_name: minishop
+  timezone: Asia/Dhaka
+  ssl_mode: disable
