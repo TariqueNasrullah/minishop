@@ -25,10 +25,12 @@ var serveCmd = &cobra.Command{
 		ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 		defer stop()
 
-		srv := rest.New(ctx)
+		srv, err := rest.NewServer(ctx)
+		if err != nil {
+			return err
+		}
 
 		var srvErr = make(chan error, 1)
-		var err error
 
 		go func() {
 			fmt.Println("Serving on port :", config.App().Port)
